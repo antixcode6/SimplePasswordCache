@@ -2,6 +2,7 @@ package init
 
 import (
 	"fmt"
+	"os"
 	"os/user"
 )
 
@@ -13,5 +14,7 @@ func Init(fileName string) {
 	}
 	homeDir := user.HomeDir
 	defaultDir := fmt.Sprintf("%s/.passwordcache", homeDir)
-	fmt.Printf(defaultDir)
+	os.MkdirAll(defaultDir, 0644)
+	userFeelGoodMsg := fmt.Sprintf("Initalized new dir at: %s", defaultDir)
+	fmt.Println(userFeelGoodMsg)
 }
