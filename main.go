@@ -1,12 +1,6 @@
 package main
-
-import (
-	"fmt"
-
-	utils "./cmd"
-)
+import "github.com/antixcode6/SimplePasswordCache/cmd"
 
 func main() {
-	fmt.Println("Test")
-	utils.Init("testfile")
+	inits.Init("Test")
 }
