@@ -2,11 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
+	"os/exec"
 	"os/user"
-	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -18,10 +17,10 @@ func init() {
 var InitsCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Initializes a new password store",
-	Long:  `Initialize a new password store and use a gpg-id for encryption. This command must be ran first`,
+	Long:  `Initialize a new password store and use a gpg-id, or two for encryption. This command must be ran first`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(args) == 0 {
-			fmt.Println("Must pass gpg key to this command")
+			fmt.Println("Must pass gpg key UID to this command: run gpg2 -k and use the uid of the key you wish to encrypt")
 			os.Exit(2)
 		}
 
@@ -32,20 +31,16 @@ var InitsCmd = &cobra.Command{
 		homeDir := user.HomeDir
 
 		defaultDir := fmt.Sprintf("%s/.passwordcache", homeDir)
-		now := time.Now()
-		sec := now.Unix()
-		cachedFile := fmt.Sprintf("%s/.%dpernia", homeDir, sec)
-		cachedIndicator := fmt.Sprintf("%s:%s", defaultDir, args[0])
-		os.Mkdir(defaultDir, 0755)
-		os.Mkdir(cachedFile, 0755)
-		cachedFilePath := fmt.Sprintf("%s/.%dpernia/cachedFile", homeDir, sec)
-		os.Create(cachedFilePath)
 
-		write1 := []byte(cachedIndicator)
-		err = ioutil.WriteFile(cachedFilePath, write1, 0755)
+		os.Mkdir(defaultDir, 0755)
+		pgpcmduid := fmt.Sprintf("--export -a %s > /tmp/pubKey.asc", args[0])
+		fmt.Println(pgpcmduid)
+
+		cmdOutput, err := exec.Command("gpg2", pgpcmduid).Output()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
+		fmt.Printf("%s", cmdOutput)
 
 		userFeelGoodMsg := fmt.Sprintf("Initalized new dir at: %s", defaultDir)
 		if _, err := os.Stat(defaultDir); os.IsNotExist(err) {
